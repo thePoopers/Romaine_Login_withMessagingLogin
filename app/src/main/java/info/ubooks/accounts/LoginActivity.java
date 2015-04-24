@@ -5,16 +5,6 @@
  * */
 package info.ubooks.accounts;
 
-import info.ubooks.accounts.app.AppConfig;
-import info.ubooks.accounts.app.AppController;
-import info.ubooks.accounts.helper.SessionManager;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -29,6 +19,19 @@ import com.android.volley.Request.Method;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.parse.LogInCallback;
+import com.parse.ParseUser;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import info.ubooks.accounts.app.AppConfig;
+import info.ubooks.accounts.app.AppController;
+import info.ubooks.accounts.helper.MessageService;
+import info.ubooks.accounts.helper.SessionManager;
 
 public class LoginActivity extends Activity {
 	// LogCat tag
@@ -39,6 +42,7 @@ public class LoginActivity extends Activity {
 	private EditText inputPassword;
 	private ProgressDialog pDialog;
 	private SessionManager session;
+    private Intent serviceIntent;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -65,6 +69,9 @@ public class LoginActivity extends Activity {
 			finish();
 		}
 
+        //Messaging service
+        serviceIntent = new Intent(getApplicationContext(), MessageService.class);
+
 		// Login button Click Event
 		btnLogin.setOnClickListener(new View.OnClickListener() {
 
@@ -76,6 +83,21 @@ public class LoginActivity extends Activity {
 				if (email.trim().length() > 0 && password.trim().length() > 0) {
 					// login user
 					checkLogin(email, password);
+
+                    //Messaging login
+                    ParseUser.logInInBackground(email, password, new LogInCallback() {
+                        public void done(ParseUser user, com.parse.ParseException e) {
+                            if (user != null) {
+                                startService(serviceIntent);
+                                Log.d("Messaging login", "Login successful");
+                            } else {
+                                Toast.makeText(getApplicationContext(),
+                                        "Wrong username/password combo",
+                                        Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    });
+
 				} else {
 					// Prompt user to enter credentials
 					Toast.makeText(getApplicationContext(),

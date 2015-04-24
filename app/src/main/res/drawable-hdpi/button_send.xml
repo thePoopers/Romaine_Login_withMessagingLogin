@@ -1,0 +1,5 @@
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="true" android:drawable="@drawable/send_button_pressed_ucf"/>
+    <item android:state_pressed="false" android:drawable="@drawable/send_button_normal_ucf"/>
+    <item android:drawable="@drawable/send_button_normal"/>
+</selector>

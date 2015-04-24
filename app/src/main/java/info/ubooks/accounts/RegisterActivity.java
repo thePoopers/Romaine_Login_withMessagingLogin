@@ -5,17 +5,6 @@
  * */
 package info.ubooks.accounts;
 
-import info.ubooks.accounts.app.AppConfig;
-import info.ubooks.accounts.app.AppController;
-import info.ubooks.accounts.helper.SQLiteHandler;
-import info.ubooks.accounts.helper.SessionManager;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -30,6 +19,20 @@ import com.android.volley.Request.Method;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.parse.ParseUser;
+import com.parse.SignUpCallback;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import info.ubooks.accounts.app.AppConfig;
+import info.ubooks.accounts.app.AppController;
+import info.ubooks.accounts.helper.MessageService;
+import info.ubooks.accounts.helper.SQLiteHandler;
+import info.ubooks.accounts.helper.SessionManager;
 
 public class RegisterActivity extends Activity {
 	private static final String TAG = RegisterActivity.class.getSimpleName();
@@ -41,6 +44,7 @@ public class RegisterActivity extends Activity {
 	private ProgressDialog pDialog;
 	private SessionManager session;
 	private SQLiteHandler db;
+    private Intent serviceIntent;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -72,6 +76,9 @@ public class RegisterActivity extends Activity {
 			finish();
 		}
 
+        //MessagingService
+        serviceIntent = new Intent(getApplicationContext(), MessageService.class);
+
 		// Register Button Click event
 		btnRegister.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View view) {
@@ -81,6 +88,24 @@ public class RegisterActivity extends Activity {
 
 				if (!name.isEmpty() && !email.isEmpty() && !password.isEmpty()) {
 					registerUser(name, email, password);
+
+                    //Register user for messaging (using email as username)
+                    ParseUser user = new ParseUser();
+                    user.setUsername(email);
+                    user.setPassword(password);
+
+                    user.signUpInBackground(new SignUpCallback() {
+                        public void done(com.parse.ParseException e) {
+                            if (e == null) {
+                                startService(serviceIntent);
+                                Log.d("Messaging Register", "Login successful");
+                            } else {
+                                Toast.makeText(getApplicationContext(),
+                                        "There was an error signing up for parse messaging."
+                                        , Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    }); //end of messaging sign-up.
 				} else {
 					Toast.makeText(getApplicationContext(),
 							"Please enter your details!", Toast.LENGTH_LONG)

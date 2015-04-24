@@ -12,5 +12,7 @@
     <string name="welcome">Welcome to UBooks</string>
     <string name="btn_logout">LOGOUT</string>
     <string name="name">Full Name</string>
+    <string name="logout">Logout</string>
+    <string name="message_elipses">Message...</string>
 
 </resources>
